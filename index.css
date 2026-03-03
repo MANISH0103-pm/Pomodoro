@@ -1,0 +1,357 @@
+/* ===================================================================
+   Pomodoro Timer — Design System
+   =================================================================== */
+
+/* ---------- CSS Custom Properties ---------- */
+:root {
+  /* Palette */
+  --bg-start: #0f0c29;
+  --bg-mid:   #302b63;
+  --bg-end:   #24243e;
+
+  --card-bg:       rgba(255, 255, 255, 0.06);
+  --card-border:   rgba(255, 255, 255, 0.12);
+  --card-shadow:   0 8px 32px rgba(0, 0, 0, 0.45);
+
+  /* Phase colours */
+  --work-accent:   #ff6b35;
+  --work-glow:     rgba(255, 107, 53, 0.35);
+  --break-accent:  #00d9a6;
+  --break-glow:    rgba(0, 217, 166, 0.35);
+  --long-accent:   #7b61ff;
+  --long-glow:     rgba(123, 97, 255, 0.35);
+
+  /* Active accent (toggled by JS) */
+  --accent:        var(--work-accent);
+  --glow:          var(--work-glow);
+
+  /* Typography */
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Sizing */
+  --ring-size: 260px;
+  --circumference: 753.98;  /* 2 × π × 120 */
+}
+
+/* ---------- Reset ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ---------- Body & Background ---------- */
+body {
+  font-family: var(--font);
+  color: #e8e8f0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--bg-start), var(--bg-mid), var(--bg-end));
+  background-size: 400% 400%;
+  animation: gradientShift 18s ease infinite;
+  overflow-x: hidden;
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Subtle noise overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px;
+  padding: 2rem 1.25rem 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* ---------- Header ---------- */
+.header { text-align: center; }
+
+.header__title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #fff, #c0bfff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header__subtitle {
+  margin-top: 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ---------- Timer Card ---------- */
+.timer-card {
+  width: 100%;
+  padding: 2.5rem 2rem 2rem;
+  border-radius: 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  transition: box-shadow 0.5s ease;
+}
+
+.timer-card.running {
+  box-shadow: 0 0 60px var(--glow), var(--card-shadow);
+}
+
+/* ---------- Phase Label ---------- */
+.phase-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--accent);
+  transition: color 0.5s ease;
+}
+
+/* ---------- Timer Ring ---------- */
+.timer-ring-wrapper {
+  position: relative;
+  width: var(--ring-size);
+  height: var(--ring-size);
+}
+
+.timer-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.timer-ring__track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 8;
+}
+
+.timer-ring__progress {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: var(--circumference);
+  stroke-dashoffset: 0;
+  transition: stroke 0.5s ease, stroke-dashoffset 0.3s ease;
+  filter: drop-shadow(0 0 6px var(--glow));
+}
+
+.timer-display {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  text-shadow: 0 0 20px var(--glow);
+  transition: text-shadow 0.5s ease;
+}
+
+/* ---------- Pomodoro Count ---------- */
+.pomodoro-count {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+.pomodoro-count strong {
+  color: var(--accent);
+  font-weight: 700;
+  transition: color 0.5s ease;
+}
+
+/* ---------- Buttons ---------- */
+.controls {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.75rem 1.75rem;
+  border: none;
+  border-radius: 14px;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.3s ease, opacity 0.3s ease, background 0.3s ease;
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn__icon {
+  font-size: 0.8rem;
+}
+
+/* Start */
+.btn--start {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 18px var(--glow);
+}
+.btn--start:hover:not(:disabled) {
+  box-shadow: 0 6px 28px var(--glow);
+  transform: translateY(-1px);
+}
+
+/* Pause/Resume */
+.btn--pause {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e8e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.btn--pause:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 18px rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+/* End */
+.btn--end {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e8e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.btn--end:hover:not(:disabled) {
+  background: rgba(255, 70, 70, 0.18);
+  border-color: rgba(255, 70, 70, 0.35);
+  box-shadow: 0 4px 18px rgba(255, 70, 70, 0.15);
+  transform: translateY(-1px);
+}
+
+/* ---------- Session Log ---------- */
+.log-section {
+  width: 100%;
+  padding: 1.75rem;
+  border-radius: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.log-section__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.log-table-wrapper {
+  overflow-x: auto;
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.log-table thead th {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 1.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.log-table tbody td {
+  padding: 0.6rem 0.75rem;
+  color: rgba(255, 255, 255, 0.75);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.log-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.log-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.log-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.log-empty {
+  text-align: center;
+  padding: 1.5rem 0;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.btn--clear {
+  margin: 0.75rem 0;
+  background: rgba(255, 255, 255, 0.08);
+  color: #e8e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.btn--clear:hover:not(:disabled) {
+  background: rgba(255, 70, 70, 0.18);
+  border-color: rgba(255, 70, 70, 0.35);
+  box-shadow: 0 4px 18px rgba(255, 70, 70, 0.15);
+  transform: translateY(-1px);
+}
+
+.log-empty.hidden,
+.log-table.hidden {
+  display: none;
+}
+
+/* New-row animation */
+@keyframes rowSlideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.log-table tbody tr.new-row {
+  animation: rowSlideIn 0.35s ease forwards;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 400px) {
+  :root { --ring-size: 210px; }
+  .timer-display { font-size: 2.8rem; }
+  .header__title { font-size: 1.6rem; }
+}

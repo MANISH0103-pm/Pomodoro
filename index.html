@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Pomodoro Timer — stay focused, study better, and beat distractions with timed work sessions and breaks." />
+  <title>Pomodoro Timer — Focus &amp; Study</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="index.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <h1 class="header__title">🍅 Pomodoro</h1>
+      <p class="header__subtitle">Stay focused. Study smarter.</p>
+    </header>
+
+    <!-- Timer Card -->
+    <main class="timer-card" id="timer-card">
+      <span class="phase-label" id="phase-label">Focus Time</span>
+
+      <div class="timer-ring-wrapper">
+        <svg class="timer-ring" viewBox="0 0 260 260" id="timer-ring-svg">
+          <circle class="timer-ring__track" cx="130" cy="130" r="120" />
+          <circle class="timer-ring__progress" cx="130" cy="130" r="120" id="progress-ring" />
+        </svg>
+        <div class="timer-display" id="timer-display">40:00</div>
+      </div>
+
+      <p class="pomodoro-count" id="pomodoro-count">Pomodoros completed: <strong>0</strong></p>
+
+      <div class="controls">
+        <button class="btn btn--start" id="btn-start">
+          <span class="btn__icon">▶</span> Start
+        </button>
+        <button class="btn btn--pause" id="btn-pause" disabled>
+          <span class="btn__icon">⏸</span> Pause
+        </button>
+        <button class="btn btn--end" id="btn-end" disabled>
+          <span class="btn__icon">■</span> End
+        </button>
+      </div>
+    </main>
+
+    <!-- Session Log -->
+    <section class="log-section" id="log-section">
+      <h2 class="log-section__title">Session Log</h2>
+      <div class="log-table-wrapper">
+        <table class="log-table" id="log-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Focus Time</th>
+              <th>Break Time</th>
+            </tr>
+          </thead>
+          <tbody id="log-body">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+        <button class="btn btn--clear" id="btn-clear-log">Clear log</button>
+        <p class="log-empty" id="log-empty">No sessions yet. Start your first pomodoro! 🚀</p>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
