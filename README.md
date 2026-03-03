@@ -1,4 +1,4 @@
-# 🍅 Pomodoro Timer — Focus & Study
+# 🍅 Pomodoro Timer — Focus & Study!!
 
 A clean, minimal Pomodoro timer app built with plain HTML, CSS, and JavaScript. No frameworks, no dependencies — just open and use.
 
